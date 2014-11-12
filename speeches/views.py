@@ -20,10 +20,11 @@ from speeches.forms import (
     SpeechForm, SpeechAudioForm, SectionForm,
     RecordingAPIForm, SpeakerForm, SectionPickForm,
     RecordingTimestampFormSet, SpeakerDeleteForm,
-    PopoloImportForm
+    PopoloImportForm, AkomaNtosoImportForm,
     )
 from speeches.models import Speech, Speaker, Section, Recording, Tag
 from speeches.mixins import Base32SingleObjectMixin, UnmatchingSlugException
+from speeches.importers.import_akomantoso import ImportAkomaNtoso
 
 from django.views.generic import (
     View, CreateView, UpdateView, DeleteView, DetailView, ListView,
@@ -673,3 +674,66 @@ class PopoloImportView(NamespaceMixin, InstanceFormMixin, FormView):
                 )
 
         return super(PopoloImportView, self).form_valid(form)
+
+
+class AkomaNtosoImportView(NamespaceMixin, InstanceFormMixin, FormView):
+    template_name = 'speeches/akoma_ntoso_import_form.html'
+    form_class = AkomaNtosoImportForm
+
+    def get_success_url(self):
+        return self.reverse_lazy('speeches:home')
+
+    def form_valid(self, form):
+        clobber_picker = {'Skip': False, 'Clobber': True}
+        clobber = clobber_picker.get(form.cleaned_data['existing_sections'])
+
+        try:
+            importer = ImportAkomaNtoso(
+                instance=self.request.instance,
+                commit=True,
+                clobber=clobber,
+                )
+
+            stats = importer.import_document(form.cleaned_data['location'])
+        except Exception as e:
+            non_field_errors = form.errors.setdefault('__all__', [])
+            non_field_errors.append(
+                _('Sorry - something went wrong with the import'))
+
+            return self.form_invalid(form)
+
+        speakers = stats.get(Speaker)
+        sections = stats.get(Section)
+        speeches = stats.get(Speech)
+        success = speakers or sections or speeches
+
+        if success:
+            messages.add_message(
+                self.request,
+                messages.SUCCESS,
+                _('Created: ') + ', '.join((
+                        ungettext(
+                            "%(speakers)d speaker",
+                            "%(speakers)d speakers",
+                            speakers,
+                            ) % {'speakers': speakers},
+                        ungettext(
+                            "%(sections)d section",
+                            "%(sections)d sections",
+                            sections,
+                            ) % {'sections': sections},
+                        ungettext(
+                            "%(speeches)d speech",
+                            "%(speeches)d speeches",
+                            speeches,
+                            ) % {'speeches': speeches},
+                        ))
+                )
+        else:
+            messages.add_message(
+                self.request,
+                messages.INFO,
+                _('Nothing new to import.'),
+                )
+
+        return super(AkomaNtosoImportView, self).form_valid(form)

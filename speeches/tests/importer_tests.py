@@ -256,29 +256,6 @@ class PopoloImportViewsTestCase(InstanceTestCase):
             Speaker.objects.filter(instance=self.instance).count(),
             3,
             )
-        popolo_importer.import_all()
-
-        self.assertEqual(Speaker.objects.filter(instance=popolo_importer.instance).count(), 3)
-
-
-@patch.object(requests, 'get', FakeRequestsOutput)
-class PopoloImportViewsTestCase(InstanceTestCase):
-    def test_import_page_smoke_test(self):
-        resp = self.client.get('/import/popolo')
-
-        self.assertContains(resp, 'Import Speakers')
-
-    def test_import_with_data(self):
-        resp = self.client.post(
-            '/import/popolo',
-            {'location': 'http://example.com/welsh_assembly/persons'},
-            follow=True,
-            )
-
-        self.assertEqual(
-            Speaker.objects.filter(instance=self.instance).count(),
-            3,
-            )
         self.assertContains(resp, '3 speakers created. 0 speakers refreshed.')
 
         # Repeat the same post

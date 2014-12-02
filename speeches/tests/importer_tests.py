@@ -110,21 +110,21 @@ class AkomaNtosoImportTestCase(InstanceTestCase):
             'speeches/fixtures/test_inputs/test_empty_title.xml')
         self.assertEqual(
             [ x.title for x in Section.objects.all() ],
-            [ '', '' ]
+            [ 'Untitled', 'Untitled' ]
         )
 
         ImportAkomaNtoso(instance=self.instance, commit=True, clobber=True).import_document(
             'speeches/fixtures/test_inputs/test_empty_title.xml')
         self.assertEqual(
             [ x.title for x in Section.objects.all() ],
-            [ '', '', '' ]
+            [ 'Untitled', 'Untitled', 'Untitled' ]
         )
 
         ImportAkomaNtoso(instance=self.instance, commit=True).import_document(
             'speeches/fixtures/test_inputs/test_empty_title.xml')
         self.assertEqual(
             [ x.title for x in Section.objects.all() ],
-            [ '', '', '', '' ]
+            [ 'Untitled', 'Untitled', 'Untitled', 'Untitled' ]
         )
 
     def test_xpath_preface_elements(self):
@@ -187,9 +187,7 @@ class AkomaNtosoImportViewTestCase(InstanceTestCase):
     def test_import_data(self):
         resp = self.client.post(
             '/import/akomantoso',
-            {'location': 'http://example.com/Debate_Bungeni_1995-10-31.xml',
-             'existing_sections': 'Skip',
-             },
+            {'location': 'http://example.com/Debate_Bungeni_1995-10-31.xml'},
             follow=True,
             )
 

@@ -636,12 +636,18 @@ class PopoloImportForm(forms.Form):
 class AkomaNtosoImportForm(forms.Form):
     location = forms.URLField(label=_('Location of Akoma Ntoso data'))
 
-    existing_sections = forms.ChoiceField(
-        label=_('What would you like to do with existing sections?'),
-        choices=(
-            ('Skip', _('Skip them - keep them exactly as they are')),
-            ('Clobber', _('Replace them - throw away the existing data and use the new')),
-            ('Duplicate', _('Duplicate them - just make them again, leaving the old ones in place')),
-            ),
-        widget=forms.RadioSelect(),
-        )
+    def __init__(self, instance=None, *args, **kwargs):
+        super(AkomaNtosoImportForm, self).__init__(*args, **kwargs)
+        self.instance = instance
+
+        if Section.objects.filter(instance=instance).exists():
+            self.fields['existing_sections'] = forms.ChoiceField(
+                label=_('What would you like to do with existing top level sections?'),
+                choices=(
+                    ('Skip', _('Skip them - keep them exactly as they are')),
+                    ('Clobber', _('Replace them - throw away the existing data and use the new')),
+                    ('Duplicate', _('Duplicate them - just make them again, leaving the old ones in place')),
+                    ),
+                widget=forms.RadioSelect(),
+                )
+

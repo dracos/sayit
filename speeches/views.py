@@ -683,9 +683,14 @@ class AkomaNtosoImportView(NamespaceMixin, InstanceFormMixin, FormView):
     def get_success_url(self):
         return self.reverse_lazy('speeches:home')
 
+    def get_form_kwargs(self):
+        kwargs = super(AkomaNtosoImportView, self).get_form_kwargs()
+        kwargs['instance'] = self.request.instance
+        return kwargs
+
     def form_valid(self, form):
         clobber_picker = {'Skip': False, 'Clobber': True}
-        clobber = clobber_picker.get(form.cleaned_data['existing_sections'])
+        clobber = clobber_picker.get(form.cleaned_data.get('existing_sections'))
 
         try:
             importer = ImportAkomaNtoso(

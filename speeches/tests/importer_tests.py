@@ -30,7 +30,7 @@ class FakeRequestsOutput(object):
 
     @property
     def content(self):
-        return open(self.file_path).read()
+        return open(self.file_path, 'rb').read()
 
 
 @patch.object(requests, 'get', FakeRequestsOutput)

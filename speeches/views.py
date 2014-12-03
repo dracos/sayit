@@ -683,7 +683,7 @@ class AkomaNtosoImportView(NamespaceMixin, InstanceFormMixin, FormView):
     form_class = AkomaNtosoImportForm
 
     def get_success_url(self):
-        return self.reverse_lazy('speeches:home')
+        return self.reverse('speeches:home')
 
     def get_form_kwargs(self):
         kwargs = super(AkomaNtosoImportView, self).get_form_kwargs()

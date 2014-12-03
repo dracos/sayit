@@ -7,6 +7,8 @@ from django.core.urlresolvers import reverse, reverse_lazy, resolve
 from django.core import serializers
 from django.contrib import messages
 from django.forms import Form
+from django.forms.forms import NON_FIELD_ERRORS
+
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext as _, ungettext
 
@@ -701,10 +703,8 @@ class AkomaNtosoImportView(NamespaceMixin, InstanceFormMixin, FormView):
 
             stats = importer.import_document(form.cleaned_data['location'])
         except Exception as e:
-            non_field_errors = form.errors.setdefault('__all__', [])
-            non_field_errors.append(
-                _('Sorry - something went wrong with the import'))
-
+            form._errors[NON_FIELD_ERRORS] = form.error_class(
+                [_('Sorry - something went wrong with the import')])
             return self.form_invalid(form)
 
         speakers = stats.get(Speaker)
